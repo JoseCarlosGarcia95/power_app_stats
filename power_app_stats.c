@@ -96,7 +96,7 @@ int main(int argc, char** args) {
         discharging_speed_mean = (1.0 * discharging_speed_mean * (i - 1) + pas_samples[i] - pas_samples[i - 1]) / (i * 1.0);
     }
 
-    printf("Lauching your application\n");
+    printf("Launching your application\n");
     pthread_create(&monitor, NULL, pas_measure_app, app_samples);
     system(app_command);
     pthread_cancel(monitor);
