@@ -55,9 +55,11 @@ void * pas_measure_app(void * app_sample_arg) {
         app_samples[i] = pas_read_charge_now();
         sleep(1);
     }
+
+    printf("Monitor finished: Waiting for app...");
 }
 int main(int argc, char** args) {
-    int i, k, pas_samples[PAS_SAMPLES], app_samples[PAS_SAMPLES], arg_len;
+    int i, k, pas_samples[PAS_SAMPLES], app_samples[PAS_SAMPLES], arg_len, finished;
     float discharging_speed_mean, discharging_speed_mean_app;
     char * app_command;
     pthread_t monitor;
@@ -98,13 +100,23 @@ int main(int argc, char** args) {
 
     printf("Launching your application\n");
     pthread_create(&monitor, NULL, pas_measure_app, app_samples);
-    system(app_command);
+
+    do {
+	system(app_command);
+
+	finished = 1;
+	
+	for (i = 1; i < PAS_SAMPLES; i++) {
+	    if (app_samples[i] == -1) {
+		finished = 0;
+	    }
+	}
+
+    } while (!finished);
+
     pthread_cancel(monitor);
 
     for (i = 1; i < PAS_SAMPLES; i++) {
-        if (app_samples[i] == -1) {
-            break;
-        }
         discharging_speed_mean_app = (1.0 * discharging_speed_mean_app * (i - 1) + app_samples[i] - app_samples[i - 1]) / (i * 1.0);
     }
 
